@@ -3,82 +3,89 @@ import "./App.css";
 import AddPost from "./components/addPost";
 import Post from "./components/post";
 
+/*  When a request is made via a REST API, it sends a representation of the resource's
+    current state to the requester or endpoint.
+    This state representation can take the form of JSON(JavaScript Object Notation),
+    XML, or HTML. JSON  is the most widely used file format because it is 
+    language - independent and can be read by both humans and machines.
+*/
 function App() {
-  //When a request is made via a REST API,
-  //it sends a representation of the resource's current state
-  //to the requester or endpoint.
-  //This state representation can take the form of JSON(JavaScript Object Notation),
-  //XML, or HTML. JSON  is the most widely used file format
-  //because it is language - independent and can be read by both humans and machines.
 
-  const [posts, setPosts] = useState([]);
+    const [posts, setPosts] = useState([]);
+    const limitFetch = 4;
   
     const fetchPosts = async() => {
-      // 1. Lets get our posts via the get method.
-      //when using the GET method, which is the default.
-      //But for other methods such as POST and DELETE,
-      //you'll need to attach the method to the options array:
-      const response = await fetch(
-        "https://jsonplaceholder.typicode.com/posts?_limit=8"
-      );
+      const response = await fetch(`https://jsonplaceholder.typicode.com/posts?_limit=${limitFetch}`);
       const data = await response.json();
       setPosts(data);
-      // This is a different way
-      //fetch("https://jsonplaceholder.typicode.com/posts?_limit=8")
-      // .then((Response) => Response.json())
-      // .then((data) => setPosts(data));
+
+      /*  // This is a different way
+          fetch("https://jsonplaceholder.typicode.com/posts?_limit=8")
+          .then((Response) => Response.json())
+          .then((data) => setPosts(data));
+      */
     };
   
-   useEffect(() => {
-     // 2. We call the fetchPost() inside the useEffect to prevent
-     // the fetch to re - render in eternety.
-     // The empty array at the end do this for us.
-     fetchPosts();
-   }, []);
+    // Call the fetchPost() inside the useEffect to prevent rerendering using []
+    useEffect(() => {
+      fetchPosts();
+    }, []);
   
     // 3. When we want to add new post to the api.
     // We have to have these arguments. title, body.
-  const addPost = async (title, body) => {
-    // 4. In our fetch, we have to add an object to 
-    // describe what kind of request it is.
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
-      // 5. we use the POST method here and describe our body = our message
-      method: "POST",
-      body: JSON.stringify({
-        title: title,
-        body: body,
-        userID: Math.random().toString(36).slice(2),
-      }),
-      // 6. we also need to give a header to our message
-      // This just tells what kind of data we are sending.
-      headers: {
-        "content-type": "application/json; charset=UTF-8",
-      },
-    });
-    // 7. we will get response from the api and handle the new post at our end.
-    const data = await response.json();
-    // 8. here we have to do a trick to get our new post as the latest post.
-    // we use spread set as this
 
-    setPosts((prevPosts) => [data, ...prevPosts]);
-  };
+    
+
+    const addPost = async (postTitle, postBody) => {
+        // To add post we have to add an object to describe what kind of request it is.
+        // We need to add a header to our message to tell what kind of data we are sending.
+        const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+            method: "POST",
+            body: JSON.stringify({
+              title: postTitle,
+              body: postBody,
+              userID: 1, // Math.random().toString(36).slice(2),
+            }),
+            headers: {
+              "content-type": "application/json; charset=UTF-8",
+            },
+        });
+
+        // Handle response data
+        const data = await response.json();
+         console.log('add data: ', data);
+
+        // Created => status 201
+        if (response.status >= 200 && response.status < 300) {
+          // Add post first in the gui
+          // setPosts((prevPosts) => [data, ...prevPosts]);
+          setPosts([data, ...posts]);
+        }
+        else {
+          console.error('Error: ', response);
+        }
+    };
 
 
   // Delete!
   const deletePost = async (id) => {
-    // 9. we have to pass in a id as argument so the api can track the post we want to delete.
+    // Delete post by sendig post id and using method "DELETE" - status 200 on success
     const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`,
       {
-        // The method for DELETE is simply DELETE
         method: "DELETE",
       }
     );
+    // console.log('Delete response: ', response);
+
     if (response.status === 200) {
       setPosts(
         posts.filter((post) => {
           return post.id !== id;
         })
       );
+    }
+    else {
+      console.error('Error: ', response);
     }
 
    };
