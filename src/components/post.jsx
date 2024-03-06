@@ -14,8 +14,8 @@ export default function Post(props) {
     );
   return (
     <div className="post-card" style={{ backgroundColor: backgroundColor }}>
-      <h2 className="post-title">{props.title}</h2>
-      <p className="post-body">{props.body}</p>
+      <h2 className="post-title">{props.id}) {props.title.substr(0, 18)}</h2>
+      <p className="post-body">{props.body.substr(0,24)}</p>
       <button className="btn-delete" onClick={() => props.deletePost(props.id)}>
         Delete
       </button>
